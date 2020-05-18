@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Attracted : MonoBehaviour {
 
-	public const int numPre = 10000;
+	public const int numPre = 1000;
 
 	[HideInInspector]
 	public Rigidbody2D rb;
