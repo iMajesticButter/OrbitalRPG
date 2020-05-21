@@ -21,7 +21,7 @@ public class DebugPredictionLine : MonoBehaviour {
 		if(lr.positionCount != att.prediction.Count)
 			lr.positionCount = att.prediction.Count;
 
-		lr.SetPositions(att.prediction.ToArray());
+		lr.SetPositions(att.getPosArrayVec3().ToArray());
 
 	}
 }

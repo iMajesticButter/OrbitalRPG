@@ -1,11 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+
+public class PredictionStep {
+	
+	public Vector2 pos;
+	public Vector2 vel;
+
+	public PredictionStep(Vector2 pos, Vector2 vel) {
+		this.pos = pos;
+		this.vel = vel;
+	}
+
+	public static implicit operator Vector2(PredictionStep s) => s.pos;
+	public static implicit operator Vector3(PredictionStep s) => s.pos;
+}
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Attracted : MonoBehaviour {
 
-	public const int numPre = 1000;
+	public const int numPre = 10000;
 
 	[HideInInspector]
 	public Rigidbody2D rb;
@@ -13,13 +28,31 @@ public class Attracted : MonoBehaviour {
 	[HideInInspector]
 	public Attractor myAttractor;
 
-	public List<Vector3> prediction = new List<Vector3>();
+	public List<PredictionStep> prediction = new List<PredictionStep>();
+
+	public List<Vector2> getPosArray() {
+		List<Vector2> newList = new List<Vector2>(prediction.Count);
+		foreach(PredictionStep step in prediction) {
+			newList.Add(step);
+		}
+		return newList;
+	}
+
+	public List<Vector3> getPosArrayVec3() {
+		List<Vector3> newList = new List<Vector3>(prediction.Count);
+		foreach (PredictionStep step in prediction) {
+			newList.Add(step);
+		}
+		return newList;
+	}
 
 
 	private bool validPrediction = false;
 
 	private Vector2 calc_pos = new Vector2(0, 0);
 	private Vector2 calc_vel = new Vector2(0, 0);
+
+	private int stepsSinceLastPrediction = 0;
 
 
 	//list of attracteds that are attached to a game object that contains an attractor
@@ -48,6 +81,7 @@ public class Attracted : MonoBehaviour {
 	void FixedUpdate() {
 		
 		validPrediction = false;
+		++stepsSinceLastPrediction;
 
 		Vector2 force = Attractor.getAttractionVector(this);
 		rb.AddForce(force);
@@ -60,25 +94,37 @@ public class Attracted : MonoBehaviour {
 			//already calculated
 			return;
 		}
-
+		
 		CalculateBothPrediction();
 		if (myAttractor == null) {
-			prediction.Clear();
 
-			Vector2 pos = transform.position;
-			Vector2 vel = rb.velocity;
+			int startIndex = 0;
+			Vector2 pos;
+			Vector2 vel;
 
-			for (int i = 0; i < numPre; ++i) {
+			if (prediction.Count != 0 && prediction[stepsSinceLastPrediction-1] == rb.position) {
+				startIndex = prediction.Count - stepsSinceLastPrediction;
+				pos = prediction[prediction.Count - 1].pos;
+				vel = prediction[prediction.Count - 1].vel;
+				prediction.RemoveRange(0, stepsSinceLastPrediction);
+			} else {
+				prediction.Clear();
+				pos = rb.position;
+				vel = rb.velocity;
+			}
+
+			for (int i = startIndex; i < numPre; ++i) {
 				//calculate prediction step
 
 				Vector2 force = Attractor.getFutureAttractionVectorSteps(this, pos, i);
 				vel += (force / rb.mass) * Time.fixedDeltaTime;
 				pos += vel * Time.fixedDeltaTime;
 
-				prediction.Add(pos);
+				prediction.Add(new PredictionStep(pos, vel));
 			}
 		}
 		validPrediction = true;
+		stepsSinceLastPrediction = 0;
 	}
 
 	public static void CalculateBothPrediction() {
@@ -93,13 +139,14 @@ public class Attracted : MonoBehaviour {
 					BothAttr[j].calc_vel = BothAttr[j].rb.velocity;
 					BothAttr[j].prediction.Clear();
 					BothAttr[j].validPrediction = true;
+					BothAttr[j].stepsSinceLastPrediction = 0;
 				}
 
 				Vector2 force = Attractor.getFutureAttractionVectorSteps(BothAttr[j], BothAttr[j].calc_pos, i);
 				BothAttr[j].calc_vel += (force / BothAttr[j].rb.mass) * Time.fixedDeltaTime;
 				BothAttr[j].calc_pos += BothAttr[j].calc_vel * Time.fixedDeltaTime;
 
-				BothAttr[j].prediction.Add(BothAttr[j].calc_pos);
+				BothAttr[j].prediction.Add(new PredictionStep(BothAttr[j].calc_pos, BothAttr[j].calc_vel));
 
 			}
 		}

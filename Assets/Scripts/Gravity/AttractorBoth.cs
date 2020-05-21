@@ -17,7 +17,7 @@ public class AttractorBoth : Attractor {
 		}
 		if (att.prediction.Count == 0)
 			return transform.position;
-		return att.prediction[stepsFromNow];
+		return att.prediction[stepsFromNow].pos;
 	}
 
 	public override Vector2 getPosInSeconds(float secondsFromNow) {
@@ -27,7 +27,7 @@ public class AttractorBoth : Attractor {
 		}
 		if (att.prediction.Count == 0)
 			return transform.position;
-		return att.prediction[index];
+		return att.prediction[index].pos;
 	}
 
 }
