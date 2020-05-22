@@ -7,8 +7,8 @@ using UnityEngine;
 public class PlanetOrbitController : MonoBehaviour {
 
 	public const float LongitudeOfAcendingNode = 0;
-	public const float maxIterations = 30;
-	public const float decimalPlaces = 30;
+	public const float maxIterations = 10;
+	public const float targetDecimals = 5;
 
 	[Header("Orbit Properties")]
 	public float apoapsisHeight;
@@ -47,8 +47,39 @@ public class PlanetOrbitController : MonoBehaviour {
 
 	public float getAngleAtTime(float time) {
 		float meanA = (StartingMeanAnomaly + ((time / orbitalPeriod) * (Mathf.PI*2))) % (Mathf.PI*2);
-		return meanA;
 
+		//convert mean anomaly to true anomaly
+		//unfortunately there is no elegent way to do this...
+
+		//calculate eccentric anomaly
+		float e = eccentricity;
+
+		float eccA;
+		float F;
+
+		if (e < 0.8f)
+			eccA = meanA;
+		else
+			eccA = Mathf.PI;
+
+		F = eccA - e * Mathf.Sin(meanA) - meanA;
+
+		float delta = Mathf.Pow(10, -targetDecimals);
+
+		for(int i = 0; i < maxIterations && (Mathf.Abs(F) > delta); ++i) {
+			eccA = eccA - F / (1.0f - e * Mathf.Cos(eccA));
+			F = eccA - e * Mathf.Sin(eccA) - meanA;
+		}
+
+
+		//calculate true anomaly
+		float sinE = Mathf.Sin(eccA);
+		float cosE = Mathf.Cos(eccA);
+
+		float fak = Mathf.Sqrt(1 - (e * e));
+		float phi = Mathf.Atan2(fak * sinE, cosE - e);
+
+		return phi;
 	}
 
 	public Vector2 getPosAtTime(float time) {
@@ -58,8 +89,16 @@ public class PlanetOrbitController : MonoBehaviour {
 		if(ParentOrbit != null) {
 			pos = ParentOrbit.getPosAtTime(time);
 		}
-		Vector2 vec = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-		float dist = periapsisHeight;
+
+		float aopAngle = angle + ArgumentOfPeriapsis;
+
+		Vector2 vec = new Vector2(Mathf.Cos(aopAngle), Mathf.Sin(aopAngle));
+
+
+		//calculate distance from parent body based on true anomaly
+		float e = eccentricity;
+
+		float dist = (semiMajorAxis * (1 - (e*e))) / (1 + (e * Mathf.Cos(angle)));
 		
 
 		return pos + (vec * dist);
@@ -88,9 +127,5 @@ public class PlanetOrbitController : MonoBehaviour {
 		currTime += Time.fixedDeltaTime;
 		rb.velocity = new Vector2(0, 0);
 		rb.position = getPosAtTime(currTime);
-
-		for(int i = 0; i < 1000; ++i) {
-			getPosInSteps(i);
-		}
 	}
 }
