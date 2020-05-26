@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Attracted))]
 public class ShipMovementController : MonoBehaviour {
 
 	[HideInInspector]
 	public Rigidbody2D rb;
+
+	[HideInInspector]
+	public Attracted att { get; private set; }
 
 	[HideInInspector]
 	public float targetRotation;
@@ -14,7 +18,7 @@ public class ShipMovementController : MonoBehaviour {
 	[HideInInspector]
 	public float Thrust {
 		get { return thrust; }
-		set { thrust = Mathf.Clamp(value, 0, 1); }
+		set { thrust = Mathf.Clamp(value, 0.0f, 1.0f); }
 	}
 
 	private float thrust;
@@ -31,6 +35,7 @@ public class ShipMovementController : MonoBehaviour {
 
 	void Start() {
 		rb = GetComponent<Rigidbody2D>();
+		att = GetComponent<Attracted>();
 		targetRotation = rb.rotation;
 	}
 
@@ -55,6 +60,9 @@ public class ShipMovementController : MonoBehaviour {
 	private void move() {
 
 		rb.AddForce(transform.up * engineThrust * thrust);
+		if(thrust != 0) {
+			att.InvalidatePrediction();
+		}
 
 	}
 }

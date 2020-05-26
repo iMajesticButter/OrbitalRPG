@@ -106,7 +106,7 @@ public class PlanetOrbitController : MonoBehaviour {
 
 	public Vector2 getPosInSteps(int steps) {
 		Vector2 pos = getPosAtTime(currTime + ((float)steps / (1 / Time.fixedDeltaTime)));
-		Debug.DrawLine(pos, pos + new Vector2(0.1f, 0.0f), Color.green);
+		//Debug.DrawLine(pos, pos + new Vector2(0.1f, 0.0f), Color.green);
 		return pos;
 	}
 

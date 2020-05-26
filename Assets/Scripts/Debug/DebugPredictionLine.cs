@@ -23,5 +23,13 @@ public class DebugPredictionLine : MonoBehaviour {
 
 		lr.SetPositions(att.getPosArrayVec3().ToArray());
 
+		if(att.IntersectionDetected) {
+			lr.startColor = Color.yellow;
+		} else if(att.PredictionCalculationDone) {
+			lr.startColor = Color.green;
+		} else {
+			lr.startColor = Color.red;
+		}
+
 	}
 }

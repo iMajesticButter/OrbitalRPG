@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 
 public class PredictionStep {
-	
+
 	public Vector2 pos;
 	public Vector2 vel;
 
@@ -20,8 +20,35 @@ public class PredictionStep {
 [RequireComponent(typeof(Rigidbody2D))]
 public class Attracted : MonoBehaviour {
 
+	//number of physics steps in the future to simulate when calculating preditions
 	public const int numPre = 10000;
 
+	//number of physics steps to skip when calculating predictions
+	//larger numbers are faster but less accurate
+	public const int numStepSkip = 0;
+
+	//required distance between the actual position and the predicted position required before recalculating
+	public const float errorThreshold = 0.25f;
+
+	public const float maxPredictionsPerUpdate = 1000;
+
+
+	public const float errorThresholdSquared = errorThreshold * errorThreshold;
+
+
+	private const int stepInc = 1 + numStepSkip;
+
+	private bool invalidPrediction = false;
+
+	[HideInInspector]
+	public bool PredictionCalculationDone {
+		get {
+			return prediction.Count == (numPre / stepInc) || IntersectionDetected;
+		}
+	}
+
+	[HideInInspector]
+	public bool IntersectionDetected { get; private set; }
 	[HideInInspector]
 	public Rigidbody2D rb;
 
@@ -32,7 +59,7 @@ public class Attracted : MonoBehaviour {
 
 	public List<Vector2> getPosArray() {
 		List<Vector2> newList = new List<Vector2>(prediction.Count);
-		foreach(PredictionStep step in prediction) {
+		foreach (PredictionStep step in prediction) {
 			newList.Add(step);
 		}
 		return newList;
@@ -66,8 +93,8 @@ public class Attracted : MonoBehaviour {
 	void Start() {
 		rb = GetComponent<Rigidbody2D>();
 		myAttractor = GetComponent<Attractor>();
-		if(myAttractor != null) {
-			if(BothAttr == null) {
+		if (myAttractor != null) {
+			if (BothAttr == null) {
 				BothAttr = new List<Attracted>();
 			}
 			BothAttr.Add(this);
@@ -79,7 +106,7 @@ public class Attracted : MonoBehaviour {
 	}
 
 	void FixedUpdate() {
-		
+
 		validPrediction = false;
 		++stepsSinceLastPrediction;
 
@@ -89,12 +116,17 @@ public class Attracted : MonoBehaviour {
 
 	}
 
+	public void InvalidatePrediction() {
+		validPrediction = false;
+		invalidPrediction = true;
+	}
+
 	public void CalculatePrediction() {
 		if (validPrediction) {
 			//already calculated
 			return;
 		}
-		
+
 		CalculateBothPrediction();
 		if (myAttractor == null) {
 
@@ -102,28 +134,55 @@ public class Attracted : MonoBehaviour {
 			Vector2 pos;
 			Vector2 vel;
 
-			if (prediction.Count != 0 && prediction[stepsSinceLastPrediction-1] == rb.position) {
-				startIndex = prediction.Count - stepsSinceLastPrediction;
+			if (!invalidPrediction && prediction.Count != 0) {
+				if (stepsSinceLastPrediction < stepInc) {
+					prediction[0].pos = transform.position;
+					return;
+				}
+				//else if (stepInc != 1) {
+					//prediction.RemoveAt(0);
+				//}
+			}
+
+			int preindex = stepsSinceLastPrediction / stepInc;
+
+			if (!invalidPrediction && prediction.Count != 0 && preindex < prediction.Count && (prediction.Count != (numPre / stepInc) || (Vector2.SqrMagnitude(prediction[preindex - 1] - rb.position) <= errorThresholdSquared))) {
+				startIndex = prediction.Count - preindex;
 				pos = prediction[prediction.Count - 1].pos;
 				vel = prediction[prediction.Count - 1].vel;
-				prediction.RemoveRange(0, stepsSinceLastPrediction);
-			} else {
+				prediction.RemoveRange(0, preindex);
+			}
+			else {
 				prediction.Clear();
 				pos = rb.position;
 				vel = rb.velocity;
 			}
 
-			for (int i = startIndex; i < numPre; ++i) {
+			IntersectionDetected = false;
+			for (int i = startIndex * stepInc, count = 0; i < numPre && count < maxPredictionsPerUpdate; i += stepInc, ++count) {
 				//calculate prediction step
 
 				Vector2 force = Attractor.getFutureAttractionVectorSteps(this, pos, i);
-				vel += (force / rb.mass) * Time.fixedDeltaTime;
-				pos += vel * Time.fixedDeltaTime;
+				vel += (force / rb.mass) * (Time.fixedDeltaTime * stepInc);
+				pos += vel * (Time.fixedDeltaTime * stepInc);
 
+				//check for intersection with a planet
+				foreach (Attractor att in Attractor.attractors) {
+					float distSquared = Vector2.SqrMagnitude(pos - att.getPosInPhysicsSteps(i));
+					float attScale = att.transform.localScale.x / 2;
+					if (distSquared <= attScale * attScale) {
+						IntersectionDetected = true;
+						break;
+					}
+				}
+				if(IntersectionDetected) {
+					break;
+				}
 				prediction.Add(new PredictionStep(pos, vel));
 			}
 		}
 		validPrediction = true;
+		invalidPrediction = false;
 		stepsSinceLastPrediction = 0;
 	}
 
@@ -131,7 +190,7 @@ public class Attracted : MonoBehaviour {
 		if (BothAttr == null || BothAttr.Count == 0 || BothAttr[0].validPrediction)
 			return;
 
-		for (int i = 0; i < numPre; ++i) {
+		for (int i = 0; i < numPre; i += stepInc) {
 			for (int j = 0; j < BothAttr.Count; ++j) {
 				//calculate prediction step including the movement of attractor objects
 				if (i == 0) {
@@ -143,8 +202,8 @@ public class Attracted : MonoBehaviour {
 				}
 
 				Vector2 force = Attractor.getFutureAttractionVectorSteps(BothAttr[j], BothAttr[j].calc_pos, i);
-				BothAttr[j].calc_vel += (force / BothAttr[j].rb.mass) * Time.fixedDeltaTime;
-				BothAttr[j].calc_pos += BothAttr[j].calc_vel * Time.fixedDeltaTime;
+				BothAttr[j].calc_vel += (force / BothAttr[j].rb.mass) * (Time.fixedDeltaTime * stepInc);
+				BothAttr[j].calc_pos += BothAttr[j].calc_vel * (Time.fixedDeltaTime * stepInc);
 
 				BothAttr[j].prediction.Add(new PredictionStep(BothAttr[j].calc_pos, BothAttr[j].calc_vel));
 
