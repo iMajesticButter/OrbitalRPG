@@ -7,10 +7,12 @@ public class PredictionStep {
 
 	public Vector2 pos;
 	public Vector2 vel;
+	public Attractor strongestAttractor;
 
-	public PredictionStep(Vector2 pos, Vector2 vel) {
+	public PredictionStep(Vector2 pos, Vector2 vel, Attractor strongestAttractor) {
 		this.pos = pos;
 		this.vel = vel;
+		this.strongestAttractor = strongestAttractor;
 	}
 
 	public static implicit operator Vector2(PredictionStep s) => s.pos;
@@ -67,8 +69,10 @@ public class Attracted : MonoBehaviour {
 
 	public List<Vector3> getPosArrayVec3() {
 		List<Vector3> newList = new List<Vector3>(prediction.Count);
+		int i = 0;
 		foreach (PredictionStep step in prediction) {
-			newList.Add(step);
+			++i;
+			newList.Add((step - step.strongestAttractor.getPosInPhysicsSteps(i)) + step.strongestAttractor.rb.position);
 		}
 		return newList;
 	}
@@ -162,8 +166,8 @@ public class Attracted : MonoBehaviour {
 			for (int i = startIndex * stepInc, count = 0; i < numPre && count < maxPredictionsPerUpdate; i += stepInc, ++count) {
 				//calculate prediction step
 
-				Vector2 force = Attractor.getFutureAttractionVectorSteps(this, pos, i);
-				vel += (force / rb.mass) * (Time.fixedDeltaTime * stepInc);
+				AttractorReturn force = Attractor.getFutureAttractionVectorSteps(this, pos, i);
+				vel += (force.force / rb.mass) * (Time.fixedDeltaTime * stepInc);
 				pos += vel * (Time.fixedDeltaTime * stepInc);
 
 				//check for intersection with a planet
@@ -178,7 +182,7 @@ public class Attracted : MonoBehaviour {
 				if(IntersectionDetected) {
 					break;
 				}
-				prediction.Add(new PredictionStep(pos, vel));
+				prediction.Add(new PredictionStep(pos, vel, force.strongest));
 			}
 		}
 		validPrediction = true;
@@ -201,11 +205,11 @@ public class Attracted : MonoBehaviour {
 					BothAttr[j].stepsSinceLastPrediction = 0;
 				}
 
-				Vector2 force = Attractor.getFutureAttractionVectorSteps(BothAttr[j], BothAttr[j].calc_pos, i);
-				BothAttr[j].calc_vel += (force / BothAttr[j].rb.mass) * (Time.fixedDeltaTime * stepInc);
+				AttractorReturn force = Attractor.getFutureAttractionVectorSteps(BothAttr[j], BothAttr[j].calc_pos, i);
+				BothAttr[j].calc_vel += (force.force / BothAttr[j].rb.mass) * (Time.fixedDeltaTime * stepInc);
 				BothAttr[j].calc_pos += BothAttr[j].calc_vel * (Time.fixedDeltaTime * stepInc);
 
-				BothAttr[j].prediction.Add(new PredictionStep(BothAttr[j].calc_pos, BothAttr[j].calc_vel));
+				BothAttr[j].prediction.Add(new PredictionStep(BothAttr[j].calc_pos, BothAttr[j].calc_vel, force.strongest));
 
 			}
 		}

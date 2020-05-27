@@ -43,10 +43,12 @@ public class PlanetOrbitController : MonoBehaviour {
 		}
 	}
 
+	public float SOI { get; private set; }
+
 	public Rigidbody2D ParentBody;
 
 	public float getAngleAtTime(float time) {
-		float meanA = (StartingMeanAnomaly + ((time / orbitalPeriod) * (Mathf.PI*2))) % (Mathf.PI*2);
+		float meanA = (StartingMeanAnomaly + ((time / orbitalPeriod) * (Mathf.PI * 2))) % (Mathf.PI * 2);
 
 		//convert mean anomaly to true anomaly
 		//unfortunately there is no elegent way to do this...
@@ -66,7 +68,7 @@ public class PlanetOrbitController : MonoBehaviour {
 
 		float delta = Mathf.Pow(10, -targetDecimals);
 
-		for(int i = 0; i < maxIterations && (Mathf.Abs(F) > delta); ++i) {
+		for (int i = 0; i < maxIterations && (Mathf.Abs(F) > delta); ++i) {
 			eccA = eccA - F / (1.0f - e * Mathf.Cos(eccA));
 			F = eccA - e * Mathf.Sin(eccA) - meanA;
 		}
@@ -86,7 +88,7 @@ public class PlanetOrbitController : MonoBehaviour {
 		float angle = getAngleAtTime(time);
 
 		Vector2 pos = ParentBody.position;
-		if(ParentOrbit != null) {
+		if (ParentOrbit != null) {
 			pos = ParentOrbit.getPosAtTime(time);
 		}
 
@@ -98,8 +100,8 @@ public class PlanetOrbitController : MonoBehaviour {
 		//calculate distance from parent body based on true anomaly
 		float e = eccentricity;
 
-		float dist = (semiMajorAxis * (1 - (e*e))) / (1 + (e * Mathf.Cos(angle)));
-		
+		float dist = (semiMajorAxis * (1 - (e * e))) / (1 + (e * Mathf.Cos(angle)));
+
 
 		return pos + (vec * dist);
 	}
@@ -115,11 +117,22 @@ public class PlanetOrbitController : MonoBehaviour {
 		rb.position = getPosAtTime(0);
 
 		ParentOrbit = ParentBody.GetComponent<PlanetOrbitController>();
+
+		SOI = Mathf.Pow(semiMajorAxis * (rb.mass / ParentBody.mass), 2.0f / 5.0f);
 	}
 
 	private void Update() {
-		if(!Application.isPlaying) {
+		if (!Application.isPlaying) {
+			SOI = Mathf.Pow(semiMajorAxis * (rb.mass / ParentBody.mass), 2.0f / 5.0f);
 			transform.position = getPosAtTime(0);
+
+			for (int i = 0; i < 360; ++i) {
+				float angle = i * Mathf.Deg2Rad;
+				float angle2 = (i + 1) * Mathf.Deg2Rad;
+				Vector2 start = (new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * SOI) + rb.position;
+				Vector2 end = (new Vector2(Mathf.Cos(angle2), Mathf.Sin(angle2)) * SOI) + rb.position;
+				Debug.DrawLine(start, end, Color.green);
+			}
 		}
 	}
 
