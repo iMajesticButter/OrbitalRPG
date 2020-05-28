@@ -165,4 +165,12 @@ public class Attractor : MonoBehaviour {
 		return transform.position;
 	}
 
+	public Vector2 transformPositionReletiveSteps(Vector2 pos, int stepsFromNow) {
+		return (pos - getPosInPhysicsSteps(stepsFromNow)) + rb.position;
+	}
+
+	public Vector2 transformPositionReletiveSeconds(Vector2 pos, int secondsFromNow) {
+		return (pos - getPosInSeconds(secondsFromNow)) + rb.position;
+	}
+
 }

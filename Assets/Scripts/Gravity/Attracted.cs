@@ -72,7 +72,7 @@ public class Attracted : MonoBehaviour {
 		int i = 0;
 		foreach (PredictionStep step in prediction) {
 			++i;
-			newList.Add((step - step.strongestAttractor.getPosInPhysicsSteps(i)) + step.strongestAttractor.rb.position);
+			newList.Add(step);
 		}
 		return newList;
 	}
@@ -150,7 +150,7 @@ public class Attracted : MonoBehaviour {
 
 			int preindex = stepsSinceLastPrediction / stepInc;
 
-			if (!invalidPrediction && prediction.Count != 0 && preindex < prediction.Count && (prediction.Count != (numPre / stepInc) || (Vector2.SqrMagnitude(prediction[preindex - 1] - rb.position) <= errorThresholdSquared))) {
+			if (!invalidPrediction && prediction.Count != 0 && preindex < prediction.Count && ((prediction.Count != (numPre / stepInc) && !IntersectionDetected) || (Vector2.SqrMagnitude(prediction[preindex - 1] - rb.position) <= errorThresholdSquared))) {
 				startIndex = prediction.Count - preindex;
 				pos = prediction[prediction.Count - 1].pos;
 				vel = prediction[prediction.Count - 1].vel;
@@ -214,4 +214,9 @@ public class Attracted : MonoBehaviour {
 			}
 		}
 	}
+
+	public static int getFutureStepsFromPredictionIndex(int predictionIndex) {
+		return predictionIndex * stepInc;
+	}
+
 }
