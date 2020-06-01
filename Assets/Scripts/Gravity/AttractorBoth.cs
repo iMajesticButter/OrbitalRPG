@@ -12,22 +12,11 @@ public class AttractorBoth : Attractor {
 	}
 
 	public override Vector2 getPosInPhysicsSteps(int stepsFromNow) {
-		if(stepsFromNow >= att.prediction.Count) {
-			stepsFromNow = att.prediction.Count - 1;
-		}
-		if (att.prediction.Count == 0)
-			return transform.position;
-		return att.prediction[stepsFromNow].pos;
+		return att.getPosInPhysicsSteps(stepsFromNow);
 	}
 
 	public override Vector2 getPosInSeconds(float secondsFromNow) {
-		int index = (int)(secondsFromNow / Time.fixedDeltaTime);
-		if (index >= att.prediction.Count) {
-			index = att.prediction.Count - 1;
-		}
-		if (att.prediction.Count == 0)
-			return transform.position;
-		return att.prediction[index].pos;
+		return att.getPosInSeconds(secondsFromNow);
 	}
 
 }

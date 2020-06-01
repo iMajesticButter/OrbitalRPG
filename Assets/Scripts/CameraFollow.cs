@@ -19,6 +19,19 @@ public class CameraFollow : MonoBehaviour {
 
 	public Camera cam { get; private set; }
 
+	public static float scaleMultMatchScreen { get {
+			return (GetWorldPositionOnPlane(new Vector3(Screen.width, 0, 0), 0) - Camera.main.transform.position).x/10;
+		} 
+	}
+
+	public static Vector3 GetWorldPositionOnPlane(Vector3 screenPosition, float z) {
+		Ray ray = Camera.main.ScreenPointToRay(screenPosition);
+		Plane xy = new Plane(Vector3.forward, new Vector3(0, 0, z));
+		float distance;
+		xy.Raycast(ray, out distance);
+		return ray.GetPoint(distance);
+	}
+
 	void Start() {
 		cam = GetComponent<Camera>();
 

@@ -3,6 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+public class OrbitProperties {
+
+	public int stepsToApoapsis;
+	public float timeToApoapsis {
+		get {
+			return stepsToApoapsis * Time.fixedDeltaTime;
+		}
+	}
+
+	public int stepsToPeriapsis;
+	public float timeToPeriapsis {
+		get {
+			return stepsToPeriapsis * Time.fixedDeltaTime;
+		}
+	}
+
+	public float ApoapsisHeight;
+	public float PeriapsisHeight;
+
+	public Attractor orbitingBody;
+}
+
 public class PredictionStep {
 
 	public Vector2 pos;
@@ -215,8 +237,107 @@ public class Attracted : MonoBehaviour {
 		}
 	}
 
+
+	public OrbitProperties getOrbitProperties(Attractor orbitingBody) {
+		return getOrbitProperties(orbitingBody, 0);
+	}
+
+	public OrbitProperties getOrbitProperties(Attractor orbitingBody, int startingIndex) {
+		if (orbitingBody == null)
+			return null;
+
+		int soiEnterIndex = startingIndex;
+		bool found = false;
+
+		for(int i = soiEnterIndex; i < prediction.Count; ++i) {
+			if(prediction[i].strongestAttractor == orbitingBody) {
+				soiEnterIndex = i;
+				found = true;
+				break;
+			}
+		}
+
+		if(!found) {
+			// we do not pass through this attractors soi in the prediction
+			return null;
+		}
+
+		int periapsisIndex = soiEnterIndex;
+		bool periapsisFound = false;
+
+		int apoapsisIndex = soiEnterIndex;
+		bool apoapsisFound = false;
+
+		float distSQ1 = 0;
+		float distSQ2 = 0;
+		float distSQ3 = 0;
+
+		//find apoapsis and periapsis
+		for (int i = soiEnterIndex; i < prediction.Count; ++i) {
+			if(distSQ1 != 0) {
+				if ((periapsisFound && apoapsisFound) || prediction[i].strongestAttractor != orbitingBody)
+					break;
+
+				if (distSQ1 > distSQ2 && distSQ2 < distSQ3) {
+					//periapsis found
+					periapsisFound = true;
+					periapsisIndex = i - 1;
+				}
+
+				if (!apoapsisFound) {
+					apoapsisIndex = i - 1;
+					if (distSQ1 < distSQ2 && distSQ2 > distSQ3) {
+						//apoapsis found
+						apoapsisFound = true;
+					}
+				}
+			}
+			distSQ1 = distSQ2;
+			distSQ2 = distSQ3;
+			distSQ3 = Vector2.SqrMagnitude(prediction[i] - orbitingBody.getPosInPhysicsSteps(getFutureStepsFromPredictionIndex(i)));
+		}
+
+		OrbitProperties properties = new OrbitProperties();
+
+		properties.stepsToApoapsis = getFutureStepsFromPredictionIndex(apoapsisIndex);
+		properties.stepsToPeriapsis = getFutureStepsFromPredictionIndex(periapsisIndex);
+
+		properties.ApoapsisHeight = Vector2.Distance(prediction[apoapsisIndex], orbitingBody.getPosInPhysicsSteps(getFutureStepsFromPredictionIndex(apoapsisIndex)));
+		properties.PeriapsisHeight = Vector2.Distance(prediction[periapsisIndex], orbitingBody.getPosInPhysicsSteps(getFutureStepsFromPredictionIndex(periapsisIndex)));
+
+		properties.orbitingBody = orbitingBody;
+
+		if (!apoapsisFound)
+			properties.stepsToApoapsis = 0;
+		if (!periapsisFound)
+			properties.stepsToPeriapsis = 0;
+
+		return properties;
+	}
+
+
+	public Vector2 getPosInPhysicsSteps(int stepsFromNow) {
+
+		int index = getPredictionIndexFromFutureSteps(stepsFromNow);
+
+		if (index >= prediction.Count) {
+			index = prediction.Count - 1;
+		}
+		if (prediction.Count == 0)
+			return transform.position;
+		return prediction[index].pos;
+	}
+
+	public Vector2 getPosInSeconds(float secondsFromNow) {
+		return getPosInPhysicsSteps((int)(secondsFromNow / Time.fixedDeltaTime));
+	}
+
 	public static int getFutureStepsFromPredictionIndex(int predictionIndex) {
 		return predictionIndex * stepInc;
+	}
+
+	public static int getPredictionIndexFromFutureSteps(int futureSteps) {
+		return futureSteps / stepInc;
 	}
 
 }

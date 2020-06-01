@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   apoapsisHeight: 45
-  periapsisHeight: 5
+  periapsisHeight: 45
   ArgumentOfPeriapsis: 3.14
   StartingMeanAnomaly: 6.28
   ParentBody: {fileID: 192923462}
@@ -265,7 +265,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 52489764}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.996441, y: 0.2469117, z: 0}
+  m_LocalPosition: {x: -44.99949, y: 0.21499039, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -440,19 +440,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 156f56d990d66d64f948d14dd93ce595, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lineWidthStart: 0.25
-  lineWidthEnd: 0.2
+  lineWidthStart: 0.05
+  lineWidthEnd: 0.04
   lineCapVerts: 3
+  futureAlphaMultiplier: 0.25
+  linePointSkip: 0
   lineMat: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   lineColors:
   - startColor: {r: 0, g: 0.76277757, b: 1, a: 1}
     endAlpha: 0.25
-  - startColor: {r: 0.88600254, g: 0, b: 1, a: 0.4392157}
+  - startColor: {r: 1, g: 0.6914678, b: 0, a: 1}
     endAlpha: 0.25
-  - startColor: {r: 1, g: 0.6906124, b: 0, a: 0.46666667}
+  - startColor: {r: 0.5934086, g: 0, b: 1, a: 1}
     endAlpha: 0.25
-  - startColor: {r: 0, g: 1, b: 0, a: 0.4392157}
+  - startColor: {r: 0, g: 1, b: 0, a: 1}
     endAlpha: 0.25
+  - startColor: {r: 1, g: 0.036188774, b: 0, a: 1}
+    endAlpha: 0.25
+  widgetSize: 0.05
+  TransferNodeWidget: {fileID: 21300000, guid: f421113c2d564c84d95117d73e5d550e, type: 3}
+  ApoapsisWidget: {fileID: 21300000, guid: c5b53362b145ffe42a75abae1508a028, type: 3}
+  PeriapsisWidget: {fileID: 21300000, guid: cd38d96d8777442459892048084102c7, type: 3}
+  CollisionWidget: {fileID: 21300000, guid: 7501a8c869f20534396d4cc668dfd381, type: 3}
 --- !u!114 &272204597
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -465,7 +474,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 891531431344d1a4e86080373f57ab21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vel: {x: 0, y: -1.45}
+  vel: {x: 0, y: -1}
 --- !u!60 &272204598
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -586,7 +595,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 272204593}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.65, y: -0.58, z: 0}
+  m_LocalPosition: {x: -6.74, y: 0.25, z: 0}
   m_LocalScale: {x: 0.25, y: 0.5, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -908,7 +917,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 961139567}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 24.97351, y: -18.243383, z: 0}
+  m_LocalPosition: {x: -146.73557, y: 51.090973, z: 0}
   m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1059,7 +1068,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1577223002}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 18.723005, y: -0.24348296, z: 0}
+  m_LocalPosition: {x: 78.72301, y: -0.24348296, z: 0}
   m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1193,7 +1202,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1959304261}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20, y: 0, z: 0}
+  m_LocalPosition: {x: 80, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1211,8 +1220,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b515d5226ac1974e89357a1d601abb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apoapsisHeight: 20
-  periapsisHeight: 20
+  apoapsisHeight: 80
+  periapsisHeight: 80
   ArgumentOfPeriapsis: 0
   StartingMeanAnomaly: 0
   ParentBody: {fileID: 192923462}
@@ -1283,10 +1292,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b515d5226ac1974e89357a1d601abb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apoapsisHeight: 30
-  periapsisHeight: 35
+  apoapsisHeight: 15
+  periapsisHeight: 250
   ArgumentOfPeriapsis: 2.4
-  StartingMeanAnomaly: 3.28
+  StartingMeanAnomaly: 2.24
   ParentBody: {fileID: 192923462}
 --- !u!58 &2114653803
 CircleCollider2D:
@@ -1361,7 +1370,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2114653799}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 25.121643, y: -16.44949, z: 0}
+  m_LocalPosition: {x: -146.58743, y: 52.88487, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
