@@ -7,8 +7,15 @@ public class PlayerShipController : MonoBehaviour {
 
 	ShipMovementController ship;
 
+	public static Transform playerShip = null;
+
 	void Start() {
+		playerShip = transform;
 		ship = GetComponent<ShipMovementController>();
+	}
+
+	void OnDestroy() {
+		playerShip = null;
 	}
 
 	void Update() {
@@ -16,6 +23,25 @@ public class PlayerShipController : MonoBehaviour {
 		pointAtMouse();
 		move();
 
+		if (Input.GetMouseButtonDown(2)) {
+			select();
+		}
+
+	}
+
+	private void select() {
+		Vector2 mousePosWorld = CameraFollow.GetWorldPositionOnPlane(Input.mousePosition, 0);
+
+		var result = Physics2D.Raycast(mousePosWorld, Vector2.zero);
+
+		if(result.collider != null) {
+			if(result.collider.bounds.Contains(mousePosWorld)) {
+				//mouse is pointing at somthing
+				if(result.transform.GetComponent<Attractor>() != null) {
+					ship.Target = result.transform;
+				}
+			}
+		}
 	}
 
 	private void pointAtMouse() {

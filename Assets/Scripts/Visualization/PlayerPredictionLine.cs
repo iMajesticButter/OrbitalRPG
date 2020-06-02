@@ -61,6 +61,8 @@ public class PlayerPredictionLine : MonoBehaviour {
 		Attractor currentSOI = null;
 		int lineIndex = -1;
 
+		//TODO: count rotation around each body and stop drawing the line if it passes a set threshold
+
 		for (int i = 0; i < att.prediction.Count; i += linePointInc) {
 			if (currentSOI != att.prediction[i].strongestAttractor || i == att.prediction.Count-1) {
 				setLineVerts(lineIndex, positions);
@@ -160,6 +162,8 @@ public class PlayerPredictionLine : MonoBehaviour {
 			newline.material = lineMat;
 
 			newline.numCapVertices = lineCapVerts;
+
+			newline.sortingOrder = -1;
 
 			lines.Add(newline);
 		}

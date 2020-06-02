@@ -84,14 +84,7 @@ public class PlanetOrbitController : MonoBehaviour {
 		return phi;
 	}
 
-	public Vector2 getPosAtTime(float time) {
-		float angle = getAngleAtTime(time);
-
-		Vector2 pos = ParentBody.position;
-		if (ParentOrbit != null) {
-			pos = ParentOrbit.getPosAtTime(time);
-		}
-
+	public Vector2 getPosAtAngle(float angle) {
 		float aopAngle = angle + ArgumentOfPeriapsis;
 
 		Vector2 vec = new Vector2(Mathf.Cos(aopAngle), Mathf.Sin(aopAngle));
@@ -103,7 +96,18 @@ public class PlanetOrbitController : MonoBehaviour {
 		float dist = (semiMajorAxis * (1 - (e * e))) / (1 + (e * Mathf.Cos(angle)));
 
 
-		return pos + (vec * dist);
+		return vec * dist;
+	}
+
+	public Vector2 getPosAtTime(float time) {
+		float angle = getAngleAtTime(time);
+
+		Vector2 pos = ParentBody.position;
+		if (ParentOrbit != null) {
+			pos = ParentOrbit.getPosAtTime(time);
+		}
+
+		return pos + getPosAtAngle(angle);
 	}
 
 	public Vector2 getPosInSteps(int steps) {
@@ -122,6 +126,7 @@ public class PlanetOrbitController : MonoBehaviour {
 	}
 
 	private void Update() {
+		//editor stuff
 		if (!Application.isPlaying) {
 			SOI = Mathf.Pow(semiMajorAxis * (rb.mass / ParentBody.mass), 2.0f / 5.0f);
 			transform.position = getPosAtTime(0);

@@ -28,6 +28,22 @@ public class ShipMovementController : MonoBehaviour {
 	public float turnSpeed = 5.0f;
 	public float engineThrust = 10.0f;
 
+	public Transform Target {
+		get {
+			return target;
+		}
+		set {
+			if(target != null)
+				target.SendMessage("UnsetAsTarget", gameObject, SendMessageOptions.DontRequireReceiver);
+
+			target = value;
+			gameObject.SendMessage("TargetChanged", SendMessageOptions.DontRequireReceiver);
+			value.SendMessage("SetAsTarget", gameObject, SendMessageOptions.DontRequireReceiver);
+		}
+	}
+
+	private Transform target = null;
+
 	public void pointAt(Vector2 pos) {
 		Vector2 vec = rb.position - pos;
 		targetRotation = Mathf.Atan2(vec.y, vec.x);

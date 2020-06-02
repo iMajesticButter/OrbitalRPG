@@ -45,7 +45,7 @@ public class PredictionStep {
 public class Attracted : MonoBehaviour {
 
 	//number of physics steps in the future to simulate when calculating preditions
-	public const int numPre = 10000;
+	public const int numPre = 20000;
 
 	//number of physics steps to skip when calculating predictions
 	//larger numbers are faster but less accurate
@@ -97,6 +97,12 @@ public class Attracted : MonoBehaviour {
 			newList.Add(step);
 		}
 		return newList;
+	}
+
+	public Attractor getOrbitingBody() {
+		if (prediction.Count == 0)
+			return null;
+		return prediction[0].strongestAttractor;
 	}
 
 
