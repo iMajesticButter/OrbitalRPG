@@ -17,7 +17,13 @@ public class CameraFollow : MonoBehaviour {
 	[Header("Zoom Speed")]
 	public float zoomSpeed = 1.0f;
 
+	[Header("What Zoom Level To Show Map Icons At")]
+	[Range(0.2f, 179)]
+	public float mapZoomLevel = 90;
+
 	public Camera cam { get; private set; }
+
+	public static bool showMapIcons = false;
 
 	public static float scaleMultMatchScreen { get {
 			return (GetWorldPositionOnPlane(new Vector3(Screen.width, 0, 0), 0) - Camera.main.transform.position).x/10;
@@ -40,16 +46,18 @@ public class CameraFollow : MonoBehaviour {
 
 	
 	void FixedUpdate() {
-		//float xLerp = Mathf.Lerp(transform.position.x, target.position.x, Time.deltaTime * speed);
-		//float yLerp = Mathf.Lerp(transform.position.y, target.position.y, Time.deltaTime * speed);
+		float xLerp = Mathf.Lerp(transform.position.x, target.position.x, Time.fixedDeltaTime * speed);
+		float yLerp = Mathf.Lerp(transform.position.y, target.position.y, Time.fixedDeltaTime * speed);
 
-		//transform.position = new Vector3(xLerp, yLerp, zAxis);
+		transform.position = new Vector3(xLerp, yLerp, zAxis);
 
-		transform.position = new Vector3(target.position.x, target.position.y, zAxis);
+		//transform.position = new Vector3(target.position.x, target.position.y, zAxis);
 
 		Vector2 scrollDelta = Input.mouseScrollDelta;
 
 		cam.fieldOfView -= scrollDelta.y * zoomSpeed;
+
+		showMapIcons = cam.fieldOfView >= mapZoomLevel;
 
 	}
 }

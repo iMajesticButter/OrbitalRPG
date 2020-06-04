@@ -54,7 +54,7 @@ public class Attracted : MonoBehaviour {
 	//required distance between the actual position and the predicted position required before recalculating
 	public const float errorThreshold = 0.25f;
 
-	public const float maxPredictionsPerUpdate = 1000;
+	public const float maxPredictionsPerUpdate = 500;
 
 
 	public const float errorThresholdSquared = errorThreshold * errorThreshold;

@@ -32,14 +32,14 @@ public class PlayerShipController : MonoBehaviour {
 	private void select() {
 		Vector2 mousePosWorld = CameraFollow.GetWorldPositionOnPlane(Input.mousePosition, 0);
 
-		var result = Physics2D.Raycast(mousePosWorld, Vector2.zero);
+		var result = Physics2D.OverlapCircle(mousePosWorld, (PlanetMapWidget.iconSize * CameraFollow.scaleMultMatchScreen)/2);
 
-		if(result.collider != null) {
-			if(result.collider.bounds.Contains(mousePosWorld)) {
-				//mouse is pointing at somthing
-				if(result.transform.GetComponent<Attractor>() != null) {
-					ship.Target = result.transform;
-				}
+		ship.Target = null;
+
+		if(result != null) {
+			//mouse is pointing at somthing
+			if(result.transform.GetComponent<Attractor>() != null) {
+				ship.Target = result.transform;
 			}
 		}
 	}

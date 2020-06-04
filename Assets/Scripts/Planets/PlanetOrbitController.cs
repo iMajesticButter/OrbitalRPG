@@ -132,10 +132,8 @@ public class PlanetOrbitController : MonoBehaviour {
 			transform.position = getPosAtTime(0);
 
 			for (int i = 0; i < 360; ++i) {
-				float angle = i * Mathf.Deg2Rad;
-				float angle2 = (i + 1) * Mathf.Deg2Rad;
-				Vector2 start = (new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * SOI) + rb.position;
-				Vector2 end = (new Vector2(Mathf.Cos(angle2), Mathf.Sin(angle2)) * SOI) + rb.position;
+				Vector2 start = getPosAtAngle(i * Mathf.Deg2Rad) + (Vector2)ParentBody.transform.position;
+				Vector2 end = getPosAtAngle((i + 1) * Mathf.Deg2Rad) + (Vector2)ParentBody.transform.position;
 				Debug.DrawLine(start, end, Color.green);
 			}
 		}

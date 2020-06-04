@@ -38,7 +38,9 @@ public class ShipMovementController : MonoBehaviour {
 
 			target = value;
 			gameObject.SendMessage("TargetChanged", SendMessageOptions.DontRequireReceiver);
-			value.SendMessage("SetAsTarget", gameObject, SendMessageOptions.DontRequireReceiver);
+
+			if(value != null)
+				value.SendMessage("SetAsTarget", gameObject, SendMessageOptions.DontRequireReceiver);
 		}
 	}
 

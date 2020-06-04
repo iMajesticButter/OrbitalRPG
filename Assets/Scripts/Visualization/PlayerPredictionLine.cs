@@ -17,6 +17,8 @@ public class PlayerPredictionLine : MonoBehaviour {
 	public float lineWidthEnd = 0.1f;
 	public int lineCapVerts = 3;
 
+	public float maxRotationsPerPlanet = 2.0f;
+
 	public float futureAlphaMultiplier = 0.5f;
 
 	public int linePointSkip = 0;
@@ -49,6 +51,16 @@ public class PlayerPredictionLine : MonoBehaviour {
 		att = GetComponent<Attracted>();
 	}
 
+	private float calcAngle(int index, Attractor orbitingBody) {
+		if (att.prediction.Count == 0)
+			return 0;
+
+		int steps = Attracted.getFutureStepsFromPredictionIndex(index);
+
+		Vector2 vec = orbitingBody.getPosInPhysicsSteps(steps) - att.prediction[index];
+
+		return Mathf.Atan2(vec.y, vec.x);
+	}
 
 	void Update() {
 		//make sure the prediction is up to date
@@ -63,8 +75,12 @@ public class PlayerPredictionLine : MonoBehaviour {
 
 		//TODO: count rotation around each body and stop drawing the line if it passes a set threshold
 
+		float lastAngle = calcAngle(0, att.getOrbitingBody());
+		float totalAngle = 0;
+		bool stop = false;
+
 		for (int i = 0; i < att.prediction.Count; i += linePointInc) {
-			if (currentSOI != att.prediction[i].strongestAttractor || i == att.prediction.Count-1) {
+			if (currentSOI != att.prediction[i].strongestAttractor || i == att.prediction.Count-1 || stop) {
 				setLineVerts(lineIndex, positions);
 				++lineIndex;
 				validateLineIndex(lineIndex);
@@ -97,12 +113,31 @@ public class PlayerPredictionLine : MonoBehaviour {
 
 				currentSOI = att.prediction[i].strongestAttractor;
 				positions.Clear();
+
+				lastAngle = calcAngle(i, currentSOI);
+				totalAngle = 0;
+
+				if (stop)
+					break;
 			}
 
 			Vector2 pos = currentSOI.transformPositionReletiveSteps(att.prediction[i], Attracted.getFutureStepsFromPredictionIndex(i));
 
 			if (i == att.prediction.Count - 1 && att.IntersectionDetected) {
 				WidgetDisplay.getWidgetDisplay().DisplayWidget(CollisionWidget, pos, new Vector2(widgetSize, widgetSize), Color.red);
+			}
+
+			float angle = calcAngle(i, currentSOI);
+
+			if(Mathf.Abs(angle - lastAngle) < Mathf.PI) {
+				totalAngle += Mathf.Abs(angle - lastAngle);
+			}
+
+			
+			lastAngle = angle;
+
+			if (totalAngle >= (Mathf.PI*2) * (maxRotationsPerPlanet)) {
+				stop = true;
 			}
 
 			positions.Add(pos);
