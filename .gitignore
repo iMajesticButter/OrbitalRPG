@@ -9,6 +9,11 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Mm]emoryCaptures/
+/[Vv]id/
+/[Vv]ids/
+/[Ss]ubmission/
+
+*.zip
 
 # Never ignore Asset meta data
 !/[Aa]ssets/**/*.meta
